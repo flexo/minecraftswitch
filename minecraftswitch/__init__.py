@@ -89,12 +89,18 @@ def switch(*args):
 
 def list(*args):
     check_initialised()
+    # get current env:
+    current = os.path.realpath(MINEDIR).rsplit('.', 1)[1]
     dirs = glob.glob(MINEDIR + '.*')
     envs = [d[len(MINEDIR) + 1:] for d in dirs]
     if envs:
-        print "Environments:"
+        print "Environments (* indicates current environment):"
         for env in envs:
-            print " *", env
+            if env == current:
+                print " *",
+            else:
+                print "  ",
+            print env
     else:
         print "No environments set up (you need to init)."
 
