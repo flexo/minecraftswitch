@@ -12,6 +12,13 @@ BADARG = 2 # Invalid user arguments
 NOTINIT = 3 # 'minecraft-switch init' has not been run.
 RUNNING = 4 # Minecraft is running
 
+class SwitchError(RuntimeError):
+    """Errors to report to the user encountered during switching."""
+    def __init__(self, code, msg):
+        RuntimeError.__init__(self, code, msg)
+        self.code = code
+        self.msg = msg
+
 def usage():
     return """%s <command>
 
@@ -28,20 +35,19 @@ def is_initialised():
     return os.path.islink(MINEDIR)
 
 def check_initialised():
-    """Complain at the user and exit if not is_initialised()."""
+    """Raise a SwitchError if not is_initialised()."""
     if not is_initialised():
-        print >> sys.stderr, "You must run '%s init <name>' first" % sys.argv[0]
-        # FIXME - don't like using sys.exit in random functions.
-        sys.exit(NOTINIT)
+        raise SwitchError(
+            NOTINIT, "You must run '%s init <name>' first." % sys.argv[0])
 
 def check_minecraft_not_running():
-    """Complain at the user and exit if minecraft is running."""
+    """Raise a SwitchError if minecraft is running."""
     ps = subprocess.Popen(['/bin/ps', 'aux'], stdout=subprocess.PIPE)
     stdout, stderr = ps.communicate()
     for line in stdout.split('\n'):
         if "Minecraft.app/Contents/MacOS/JavaApplicationStub" in line:
-            print >> sys.stderr, "Minecraft must not be running while using this command"
-            sys.exit(RUNNING)
+            raise SwitchError(
+                RUNNING, "Minecraft must not be running during this command.")
 
 def init(*args):
     """Take the existing minecraft environment and turn it into a multi-env"""
@@ -57,8 +63,7 @@ def init(*args):
         return OK
     else:
         if not os.path.exists(MINEDIR):
-            print >> sys.stderr, "Error: Minecraft not found at %s" % MINEDIR
-            return ERROR
+            raise SwitchError(ERROR, "Minecraft not found at %s" % MINEDIR)
         # move the minecraft directory to a new location
         newdir = "%s.%s" % (MINEDIR, args[0])
         os.rename(MINEDIR, newdir)
@@ -78,6 +83,8 @@ def new(*args):
     check_initialised()
     # create a new empty dir for the new environment
     newdir = "%s.%s" % (MINEDIR, args[0])
+    if os.path.exists(newdir):
+        raise SwitchError(ERROR, "Environment already exists")
     os.mkdir(newdir)
     # update symlink
     os.unlink(MINEDIR)
@@ -135,6 +142,10 @@ def main():
         print >> sys.stderr, "Invalid command."
         print >> sys.stderr, usage()
         return BADARG
-
-    return cmd(*sys.argv[2:])
+    
+    try:
+        return cmd(*sys.argv[2:])
+    except SwitchError, e:
+        print >> sys.stderr, "Error:", e.msg
+        return e.code
 
