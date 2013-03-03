@@ -1,7 +1,37 @@
 Script to associate savegames with minecraft versions on OS X, providing a 
 tool to toggle between environments.
 
+This was originally written to allow different sets of games with different
+versions of Minecraft.
+
 I make no guarentees about the quality of this software, use at your own risk!
 I am not responsible for any loss of game data or any other adverse effects
 you may suffer as a result of using this software.
+
+Installation Instructions
+-------------------------
+
+Clone this repo to somewhere on your computer (you can delete it afterwards):
+
+    git checkout https://github.com/flexo/minecraftswitch
+
+Use the provided installer to install onto your system:
+
+    cd minecraftswitch
+    sudo python setup.py install
+
+You can now run MinecraftSwitch:
+    
+    minecraft-switch 
+  > Usage: /Library/Frameworks/Python.framework/Versions/2.7/bin/minecraft-switch <command>
+  >
+  > Available commands:
+
+  > init <name> -- set up and create new environment name
+  > new <name> -- create new minecraft environment
+  > switch <name> -- switch to given minecraft environment
+  > list -- list environments
+
+    Begin by running 'minecraft-switch init' to turn your main installation
+    into the first environment.
 

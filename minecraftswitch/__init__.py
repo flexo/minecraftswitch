@@ -20,7 +20,7 @@ class SwitchError(RuntimeError):
         self.msg = msg
 
 def usage():
-    return """%s <command>
+    return """Usage: %s <command>
 
 Available commands:
 
