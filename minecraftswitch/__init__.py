@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import glob
@@ -118,5 +117,3 @@ def main():
         return BADARG
     return cmd(*sys.argv[2:])
 
-if __name__ == '__main__':
-    sys.exit(main())
