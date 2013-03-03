@@ -1,14 +1,16 @@
 import os
 import sys
 import glob
+import subprocess
 
 MINEDIR = os.path.expanduser('~/Library/Application Support/minecraft')
 
 # Return codes
 OK = 0
-ERROR = 1
-BADARG = 2
-NOTINIT = 3
+ERROR = 1 # Unrecoverable errors
+BADARG = 2 # Invalid user arguments
+NOTINIT = 3 # 'minecraft-switch init' has not been run.
+RUNNING = 4 # Minecraft is running
 
 def usage():
     return """%s <command>
@@ -32,6 +34,15 @@ def check_initialised():
         # FIXME - don't like using sys.exit in random functions.
         sys.exit(NOTINIT)
 
+def check_minecraft_not_running():
+    """Complain at the user and exit if minecraft is running."""
+    ps = subprocess.Popen(['/bin/ps', 'aux'], stdout=subprocess.PIPE)
+    stdout, stderr = ps.communicate()
+    for line in stdout.split('\n'):
+        if "Minecraft.app/Contents/MacOS/JavaApplicationStub" in line:
+            print >> sys.stderr, "Minecraft must not be running while using this command"
+            sys.exit(RUNNING)
+
 def init(*args):
     """Take the existing minecraft environment and turn it into a multi-env"""
     if len(args) != 1:
@@ -40,6 +51,7 @@ def init(*args):
         return BADARG
     if not args[0].isalnum():
         print >> sys.stderr, "environment name must contain only a-z,A-Z,0-9"
+    check_minecraft_not_running()
     if is_initialised():
         print "Already initialised"
         return OK
@@ -62,6 +74,7 @@ def new(*args):
         return BADARG
     if not args[0].isalnum():
         print >> sys.stderr, "environment name must contain only a-z,A-Z,0-9"
+    check_minecraft_not_running()
     check_initialised()
     # create a new empty dir for the new environment
     newdir = "%s.%s" % (MINEDIR, args[0])
@@ -69,7 +82,7 @@ def new(*args):
     # update symlink
     os.unlink(MINEDIR)
     os.symlink(newdir, MINEDIR)
-    print "Created new environment at %s" % newdir
+    print "Created and switched to new environment at %s" % newdir
     print "You will need to download the game data into it."
 
 def switch(*args):
@@ -77,6 +90,7 @@ def switch(*args):
         print >> sys.stderr, "Missing argument: name of environment to switch to"
         print >> sys.stderr, usage()
         return BADARG
+    check_minecraft_not_running()
     check_initialised()
     # check environment exists
     newdir = "%s.%s" % (MINEDIR, args[0])
@@ -121,5 +135,6 @@ def main():
         print >> sys.stderr, "Invalid command."
         print >> sys.stderr, usage()
         return BADARG
+
     return cmd(*sys.argv[2:])
 
