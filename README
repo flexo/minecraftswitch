@@ -13,7 +13,7 @@ Installation Instructions
 
 Clone this repo to somewhere on your computer (you can delete it afterwards):
 
-    git checkout https://github.com/flexo/minecraftswitch
+    git clone https://github.com/flexo/minecraftswitch
 
 Use the provided installer to install onto your system:
 
@@ -32,6 +32,6 @@ You can now run MinecraftSwitch:
   > switch <name> -- switch to given minecraft environment
   > list -- list environments
 
-    Begin by running 'minecraft-switch init' to turn your main installation
-    into the first environment.
+Begin by running 'minecraft-switch init' to turn your main installation into
+the first environment.
 
